@@ -1,3 +1,5 @@
+This is the common session for all the students
+
 Extract-->Transform-->Dataset Properties(Hierachies, Groups,Mark Date Table)-->Data Model (Relationships, Table Properties,
 Column Properties, DAX Measures properties, Security)
 
