@@ -1,0 +1,231 @@
+Extract-->Transform-->Dataset Properties(Hierachies, Groups,Mark Date Table)-->Data Model (Relationships, Table Properties,
+Column Properties, DAX Measures properties, Security)
+
+Share to other people [PBIX, PBIT, Dataflow, PBI Dataset]
+
+
+Read the complete theory about Data Modeling from the PDF.
+
+Model Create Process In Brief:
+
+a) Take the required data (queries) from sources
+b) Transform data in the queries [Optional]
+c)  Dataset level
+
+	1. Create Hierarchies, Groups required for the report dataset.
+	2.Mark Date table entries as Date Table in the 
+
+Modeling Menu-->New Table 
+
+DimDate=
+
+ADDCOLUMNS 
+(
+CALENDAR (DATE(2017,1,1), DATE(2020,12,31)),
+
+"DateAsInteger", FORMAT ( [Date], "YYYYMMDD" ),
+"Year", YEAR ( [Date] ),
+"Monthnumber", FORMAT ( [Date], "MM" ),
+"YearMonthnumber", FORMAT ( [Date], "YYYY/MM" ),
+"YearMonthShort", FORMAT ( [Date], "YYYY/mmm" ),
+"MonthNameShort", FORMAT ( [Date], "mmm" ),
+"MonthNameLong", FORMAT ( [Date], "mmmm" ),
+"DayOfWeekNumber", WEEKDAY ( [Date] ),
+"DayOfWeek", FORMAT ( [Date], "dddd" ),
+"DayOfWeekShort", FORMAT ( [Date], "ddd" ),
+"Quarter", "Q" & FORMAT ( [Date], "Q" ),
+"YearQuarter", FORMAT ( [Date], "YYYY" ) & "/Q" & FORMAT ( [Date], "Q" 
+)
+
+d) Go to Model Design
+
+	1.Verify the existing relationships between tables.
+	Note: Microsoft algorithms will connect automatically if the names, data types and values match.
+
+	2. Connect or establish relationship from Query:Query
+
+		Master Dimension Table to Child Dimension Table [ 1: Many]
+		Dimension Table to Fact Table [1:Many]
+	
+		Note: It automatically make many to many between Dimension to Dimension. [Multiple 1:Many relationships 		make Many:Many]
+	
+		DimCourse[CourseID]-> FactPayments[CourseID]
+		DimCourseMode[ModeID]-->FactPayments[ModeID]
+		DimLocation[LocationID]-->FactPayments[LocationID]
+		DimInstitute[InstituteID]-->FactPayments[InstituteID]
+		DimStudent[StudentID]-->FactPayments[StudentID]
+		DimUser[UserID]-->FactPayments[UserID]
+
+		DimDate[Date]--> FactPayments[Date]
+		DimDate[Date]--> FactPayments[Enquiry_Date]
+		DimDate[Date]--> FactPayments[Join_Date]
+		DimDate[Date]--> FactPayments[Course_End_Date]
+		Note: DimDate is Role Playing Table
+
+		DimGeography[GeographyID]--->DimLocation[GeographyID]
+
+	3. 	Go to each Query/ Table specify table settings
+		Name 
+		Description
+		Synonym
+		Row Label: Display Label
+		Key Column: Underlying evaluation value
+		Storage Mode
+		
+	
+	4. Ensure each column having appropriate settings
+
+		a) Proper Name
+		b) Description
+		c) Display Folder classficiation [grouping columns for easy of operations]
+		d) Synonyms [suitable for Q & A and other situations]
+		e) Data Type [ important]
+		f)  Format [important, how you want to show]
+		g) Hidden / Non Hidden
+		h) Sort column, Categorize column, Aggregate etc...
+		
+	5. Take Role Playing reference keys from DimDate to Fact Table
+	6. Take Bidirectional relationship between FactPayments to DimCourse
+
+	7. Size the Queries to show effectively [by holding corners or center resizing]
+
+	
+e)	Row Level Security Adding:
+		a) Modeling menu--> manage roles-->create role
+		b) Modeling menu--> view as roles and test it
+
+f) 	Working on Important DAX measures and placing in the model for reusability purpose.
+	
+	DAX: Data Analysis Expressions
+	Design Reason: Modeling and Analysis
+	What it does?
+	Helps to create new measure, column, and table for modeling and analysis purpose.
+
+	New Measure: Returns single value after doing calculations
+	New Column: Returns single column of values after doing calculations
+	New Table: Returns set of columns to implement business logics
+
+	Few Basic Language Elements:
+	a) Similar to other languages, DAX also has its own elements [identifier, operator, keyword, functions etc...]
+	b) It has many functions and multiple categories of functions available.
+	
+	Date, Filter, Math & Trig, Statistical, Information, Time Intelligence, Logical functions etc...
+
+	Note: DAX is called as formula language or functional language
+
+	
+	Important real-time measures, columns, and tables.
+
+	a) Modeling Menu--> New Table-->
+
+DimDate=
+
+ADDCOLUMNS 
+(
+CALENDAR (DATE(2000,1,1), DATE(2025,12,31)),
+
+"DateAsInteger", FORMAT ( [Date], "YYYYMMDD" ),
+"Year", YEAR ( [Date] ),
+"Monthnumber", FORMAT ( [Date], "MM" ),
+"YearMonthnumber", FORMAT ( [Date], "YYYY/MM" ),
+"YearMonthShort", FORMAT ( [Date], "YYYY/mmm" ),
+"MonthNameShort", FORMAT ( [Date], "mmm" ),
+"MonthNameLong", FORMAT ( [Date], "mmmm" ),
+"DayOfWeekNumber", WEEKDAY ( [Date] ),
+"DayOfWeek", FORMAT ( [Date], "dddd" ),
+"DayOfWeekShort", FORMAT ( [Date], "ddd" ),
+"Quarter", "Q" & FORMAT ( [Date], "Q" ),
+"YearQuarter", FORMAT ( [Date], "YYYY" ) & "/Q" & FORMAT ( [Date], "Q" 
+)
+
+
+	b) New Columns creation
+	c) New Measures Preperation
+			
+		1.Parent Measure [Fully Additive Measures]
+		
+				Total DF=sum(FactPayments[Discount_Fee])
+				Total Actual Fee=sum(Factpayment[Actual_fee])
+				Average Discount Fee=Average(Factpayments[Discount_fee])
+				Count of students=Count(dimstudent[studentid])
+			
+		2. Child measure [Semi Additive Measures]
+
+				Last year DF=calculate([Total DF],previousyear(dimdate[date]))
+
+		3. Sub child / Sub dependent measure [Non additive measures is one of the category]
+				Growth=[Total DF]-[Last Year DF]
+			
+		etc....
+		Note: Individual measures also 
+
+		4. Data Modeling functions usage
+		
+		Directions [single / both] using CROSSFILTER
+
+		Total modes business = CALCULATE(DISTINCTCOUNT(DimCourseMode[ModeID]),CROSSFILTER				(FactPayments[ModeID],DimCourseMode[ModeID],Both))
+
+		Relationships establishment
+
+		Total DF based on Enquiry_Date=CALCULATE([Total DF], USERELATIONSHIP(DimDate[Date],FactPayments		[Enquiry_Date]))
+
+
+
+===========================================================================
+How many ways the above model reusable?
+
+a) PBIX file sharing [general] [on-premise]
+b) PBIT file sharing [Power BI Template Sharing]: It takes only structure [on-premise]
+c) Publishing to Service, ask the team to use Dataset  [cloud]
+d) Create a Dataflow with similar design and use it [cloud]
+
+
+Data Set Model Template Creation:
+a) File Menu--> Export--> Power BI Template --> Name it and Browse to a location
+
+Dataset Model Template Usage:
+a) Open Power BI Desktop
+b) File Menu--> Import--> Template-->Browse it
+c) Go to Data Source Settings--> Change Source to the data feed you want to point to
+d) Refresh ALL, so that from the pointed source it brings the dataWhat is the difference between Template Dataset and Normal Dataset?
+
+Template Dataset : holds structure only
+Normal Dataset: may hold data also [structure + data] 
+
+What will you do after a proper Model Generation?
+
+Use visuals and generate report
+
+How do you share this Model to your colleagues or other members?
+
+a) Create a Template [.pbit] and Share the Template
+b) Publish Report, so that Dataset available at Power BI Service to reuse
+
+When do we create Data Model for Power BI?
+
+Before reporting starts in the organization
+
+What is the Advantage of Data Model in Power BI?
+
+Reusability
+
+One single central data base / data set design  sharing to all the team to work on.
+
+How do you establish runtime relationship between queries?
+
+Using DAX Function: USERELATIONSHIP
+
+How do you establish runtime directions (single / both) to queries?
+
+Using DAX Function: CROSSFILTER
+
+What kind of Power BI Data Model reusability companies are using now?
+
+Data Flow creation and usage
+
+
+
+
+
+
+
